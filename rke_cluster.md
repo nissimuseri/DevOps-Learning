@@ -8,6 +8,8 @@ chmod +x rke
 sudo mv rke /usr/local/bin
 
 # Checking Rancher RKE version
+
+```
 rke --version
 ```
 
