@@ -1,4 +1,4 @@
-# How to deploy a RKE cluster on CentOS:
+# How to deploy a RKE(Runcher Kubernetes Engine) cluster on CentOS:
 
 ## Step 1 - Install RKE on the VM:
 
@@ -6,8 +6,9 @@
 wget -O rke https://github.com/rancher/rke/releases/download/v0.3.1/rke_linux-amd64
 chmod +x rke
 sudo mv rke /usr/local/bin
+```
 
-# Checking Rancher RKE version
+Check the RKE version to ensure it was installed:
 
 ```
 rke --version
@@ -16,6 +17,7 @@ rke --version
 ## Step 2 - Docker Installation:
 
 Check which docker version is installed:
+
 `docker --version`
 
 if the version is above 19.03, remove and reinstall the specific relevant version, as the requrirements of RKE.
@@ -70,7 +72,8 @@ This node will be also the Control Plane, the Worker, and the ETCD hosts.
 
 (For our needs and capability, we have created the cluster with 2 nodes).
 
-After you finish to enter all the details, the cluster.yml file will be create.
+## Step 4 - Raise the RKE cluster up:
+After you have finished to enter all the details, the cluster.yml file will be create.
 For running this cluster, you have to enable the execution of `docker.soc`:
 
 ```
