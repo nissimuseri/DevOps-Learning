@@ -18,7 +18,9 @@ rke --version
 
 Check which docker version is installed:
 
-`docker --version`
+```
+docker --version
+```
 
 if the version is above 19.03, remove and reinstall the specific relevant version, as the requrirements of RKE.
 (supported versions are [1.13.x 17.03.x 17.06.x 17.09.x 18.06.x 18.09.x 19.03.x] )
@@ -44,7 +46,8 @@ Check if the docker was install correctly:
 ```
 docker --verision
 ```
-
+ If you got 19.03 - it was ok.
+ 
 ## Step 3 - Configue the RKE cluster:
 
 RKE configuration is detailed on cluster.yml file.
