@@ -1,6 +1,6 @@
 # Helm
 
-* Need to validate all the contects on this page is correct.
+** Need to validate all the contects on this page is correct **
 
 ### Helm is a Kubernetes package manager
 

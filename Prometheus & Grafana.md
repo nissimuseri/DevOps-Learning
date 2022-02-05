@@ -1,6 +1,6 @@
 # Prometheus
 
-* Still a draft
+** Still a draft **
 
 Prometheus is a monitor tool.
 It helps us as an operator for Kubernetes.

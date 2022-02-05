@@ -1,6 +1,6 @@
 # Loki
 
-* Still a draft
+** Still a draft **
 
 It's ike Prometheus, just for logging.
 

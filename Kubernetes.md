@@ -1,6 +1,6 @@
 # Kubernetes
 
-* Need to validate all the contects on this page is correct.
+** Need to validate all the contects on this page is correct **
 
 ### K8s is an orchestrator and Cluster Manager of containers.
 

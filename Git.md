@@ -1,6 +1,6 @@
 # Git
 
-* Still a draft
+** Still a draft **
 
 ## Git Objects:
 

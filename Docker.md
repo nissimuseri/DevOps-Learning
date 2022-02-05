@@ -1,6 +1,6 @@
 # Docker
 
-* Still a draft
+** Still a draft **
 
 The reasons that Docker was innovated so fast are:
 - Make the VM lighter
