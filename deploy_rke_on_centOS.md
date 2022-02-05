@@ -1,4 +1,4 @@
-# How to deploy a RKE(Runcher Kubernetes Engine) cluster on CentOS:
+# How to deploy a RKE(Runcher Kubernetes Engine) cluster on CentOS
 
 ## Step 1 - Install RKE on the VM:
 
