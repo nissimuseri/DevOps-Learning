@@ -2,7 +2,7 @@
 
 Kubernetes(K8s) is an orchestrator and Cluster Manager of containers, it is a docker based and come to be a deployment solution for application that developed by micro services.
 
-*K8S includes:*
+**K8S includes:**
 * Orchestrator
 * Cluster manager
 * Abstraction layer
