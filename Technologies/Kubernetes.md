@@ -1,5 +1,5 @@
  # Kubernetes OS
-
+---
 Kubernetes(K8s) is an orchestrator and Cluster Manager of containers, it is a docker based and come to be a deployment solution for application that developed by micro services.
 
 **K8S includes:**
@@ -13,7 +13,7 @@ I will try to explain the basis of K8s inside this file.
 
 Kubernetes has many objects inside its internal Operating System, we will list each one of them and try to explain the use and needs for each one.
 
-## Kubernetes Objects(Kinds)
+## Kubernetes Resources(Kinds)
 
 - Pod
 - Deployment
@@ -25,7 +25,7 @@ Kubernetes has many objects inside its internal Operating System, we will list e
 - CRD
 - ConfigMap / Secret
 
-### Kubernetes Object Structure
+### Kubernetes Resource Structure
 
 Each Kubernetes object defines by a YAML file with 5 fields:
 
@@ -157,40 +157,70 @@ A controller that raise the replica of the Pods according to some metrics.
 TBD
 
 
-## Useful Commands
+---
+## Kubernetes Components:
 
-We can control our Kubernetes Cluster with `kubectl` command as a CLI interface for Kubernetes.
+When we are raising up a Kubernetes Cluster, there are a few components that coming up to give us the entire cluster.
 
-`KUBECONFIG` is an environment variable that configure the file that `kubectl` talk with.
+Kubernetes uses 2 splitted objects: The `controlplane` & The `dataplane`(docker / containerD).
 
-We can override it or use the default that located in `~/.kube/config`.
+Controlplane - Where the Kubernetes components are running(etcd, schduler, kube-proxy, etc.).
 
-`kubectl config get-contexts` - list of Kubernetes Clusters in a linux machine.
+Dataplane - Where the pods(microservices) are running.
 
-`kubectl config use-contexts CONTEXT` - configure with which context you are using.
+This is a different method of work from Virtualization that need to run together for giving a working node.
 
-`kubectl config set-contexts CONTEXT` - configure defaults for context’s properties(namespace, user, etc.).
+On Kubernetes the dataplane is accessible also when the controlplane is down(loosely coupled).
 
-`kubectl get pods —all-namespaces` - get all pods in all namespaces.
+**So what happens when we are raising a cluster up(`minikube start`, `rke up`, etc.) ?**
 
-`kubectl create deployment --image=IMAGE_NAME DEPLOYMENT_NAME` - like a `docker run` command, it takes defaults for any parameters for this deployment. It must to declare at least the image name.
+- It creates a new VM.
+- Run kubelet(talk with the dataplane for running containers)
+- Run controlplane components(apiservice, kube-proxy, scheduler, controller-manager)
+    - No HA/redundancy of services, 1 component for each cluster.
+- Save the kubectl context(also called kubeconfig)
 
-`kubectl get deployment DEPLOYMENT_NAME -oyaml` - show the deployment details by a YAML format file.
+## Control Loop
 
-`kubectl describe pod POD_NAME` - get information about the pod values, last events, and current status.
+This is the basic method that Kubernetes does for get the desired state of application.
 
-`kubectl scale deployment DEPLOYMENT_NAME —replicas X` - change replica set to X for the deployment.
+Observe → Diff → Act → → Observe → Diff → Act → …
 
-`kubectl get nodes` - list all nodes(servers) on your cluster.
+This loop ensure that all Kubernetes objects are in the desired state of the app, so if something wrong in thew system, Kubernetes act to fix the diff.
 
-`kubectl port-forward POD_NAME PORT_NUMBER:TARGET_PORT_NUMBER` - transfer the Pod traffic from the image port to some port that you want to access with to the traffic.
 
-`kubectl expose deployment DEPLOYMENT_NAME —port PORT_NUMBER` - create a Service to the Deployment and listen to this Service with a PORT_NUMBER.
+## Kubernetes Infrastructure
 
-`kubectl exec -it POD_NAME — bash` - enter a bash shell to the pod env.
+Kubernetes Nodes are separated to 2 groups: Master(Manager) & Node(Worker).
+
+The Worker nodes - do the work
+The master nodes - control it.
+
+The Master Node is also has a Worker capabilities in addition to unique services that it has itself.
+
+A Master Node(controlplane) includes:
+
+- ETCD (etcd) - Key/Value Store for the Cluster, this is the base D.B for the cluster. Must be odd number of nodes(1 as a master, 2 or more as replicas).
+- K8s API Server (api) - The K8s API, this is the unit that start each operation in Kubernetes. both inside the cluster and from the user to the cluster.
+As a user, you are communicate only with the API. This is a rest API.
+- Scheduler (sched.) - Responsible on Pods placement according to CPU/Memory/any user definition inside the manifest(affinity), actually decide which node will run the API call that got from the API Service.
+- Controller Manager (c-m) - The basic controller that responsible on the Control Loop.
+There are several basic controllers in Kubernetes vanilla, such as RS(ReplicaSet), DS(DeamonSet), etc.
+We can also extend the capabilities of Kubernetes by create new Controllers for CRDs(Custom Resource Definition), such as Prometheus-Stack, etc.
+- Cloud Controller Manager (c-c-m) - Optional for external cloud controller
+- CoreDNS - This is not mandatory object inside the controlplane, but in most use cases we are using CoreDNS(or other DNS as a Service solutions) to be our local DNS manager. By default the local DNS name is `CLUSTER_NAME.cluster.local`.
+
+The Worker Node(dataplane) includes:
+
+- Kubelet (kubelet) - The primary “node agent” that runs on each node, work as Docker(or ContainerD) for each node to ensure containers are running in a pod.
+- Kube-proxy (k-proxy) - Work as a network proxy for each node, and reflects services as defined in the K8s API. This unit is responsible on manage the IP & Ports for each node.
+For each Service that comes up, the kube-proxy configure the IP table according to the details that declared in the Service manifest.
+
+**A basic flow looks like:**
+External/Internal API Call -> received on API Service -> save values on ETCD -> create a Control Loop with the Controller -> the Scheduler decides which node will treat on this API call.
+
 
 ---
-
 # Kubernetes Core
 
 Let’s deep dive to How Kubernetes works.
@@ -250,62 +280,36 @@ The filters are based on chain of rules from IP tables, each packet try to find 
 
 There are three traditional protocol for the routing: Filter, Mangle, NAT.
 
-## Kubernetes Components:
 
-When we are raising up a Kubernetes Cluster, there are a few components that coming up to give us the entire cluster.
+---
+## Useful Commands
 
-Kubernetes uses 2 splitted objects: The `controlplane` & The `dataplane`(docker / containerD).
+We can control our Kubernetes Cluster with `kubectl` command as a CLI interface for Kubernetes.
 
-Controlplane - Where the Kubernetes components are running(etcd, schduler, kube-proxy, etc.).
+`KUBECONFIG` is an environment variable that configure the file that `kubectl` talk with.
 
-Dataplane - Where the pods(microservices) are running.
+We can override it or use the default that located in `~/.kube/config`.
 
-This is a different method of work from Virtualization that need to run together for giving a working node.
+`kubectl config get-contexts` - list of Kubernetes Clusters in a linux machine.
 
-On Kubernetes the dataplane is accessible also when the controlplane is down(loosely coupled).
+`kubectl config use-contexts CONTEXT` - configure with which context you are using.
 
-**So what happens when we are raising a cluster up(`minikube start`, `rke up`, etc.) ?**
+`kubectl config set-contexts CONTEXT` - configure defaults for context’s properties(namespace, user, etc.).
 
-- It creates a new VM.
-- Run kubelet(talk with the dataplane for running containers)
-- Run controlplane components(apiservice, kube-proxy, scheduler, controller-manager)
-    - No HA/redundancy of services, 1 component for each cluster.
-- Save the kubectl context(also called kubeconfig)
+`kubectl get pods —all-namespaces` - get all pods in all namespaces.
 
-## Control Loop
+`kubectl create deployment --image=IMAGE_NAME DEPLOYMENT_NAME` - like a `docker run` command, it takes defaults for any parameters for this deployment. It must to declare at least the image name.
 
-This is the basic method that Kubernetes does for get the desired state of application.
+`kubectl get deployment DEPLOYMENT_NAME -oyaml` - show the deployment details by a YAML format file.
 
-Observe → Diff → Act → → Observe → Diff → Act → …
+`kubectl describe pod POD_NAME` - get information about the pod values, last events, and current status.
 
-This loop ensure that all Kubernetes objects are in the desired state of the app, so if something wrong in thew system, Kubernetes act to fix the diff.
+`kubectl scale deployment DEPLOYMENT_NAME —replicas X` - change replica set to X for the deployment.
 
-## Kubernetes Infrastructure
+`kubectl get nodes` - list all nodes(servers) on your cluster.
 
-Kubernetes Nodes are separated to 2 groups: Master(Manager) & Node(Worker).
+`kubectl port-forward POD_NAME PORT_NUMBER:TARGET_PORT_NUMBER` - transfer the Pod traffic from the image port to some port that you want to access with to the traffic.
 
-The Worker nodes - do the work
-The master nodes - control it.
+`kubectl expose deployment DEPLOYMENT_NAME —port PORT_NUMBER` - create a Service to the Deployment and listen to this Service with a PORT_NUMBER.
 
-The Master Node is also has a Worker capabilities in addition to unique services that it has itself.
-
-A Master Node(controlplane) includes:
-
-- ETCD (etcd) - Key/Value Store for the Cluster, this is the base D.B for the cluster. Must be odd number of nodes(1 as a master, 2 or more as replicas).
-- K8s API Server (api) - The K8s API, this is the unit that start each operation in Kubernetes. both inside the cluster and from the user to the cluster.
-As a user, you are communicate only with the API. This is a rest API.
-- Scheduler (sched.) - Responsible on Pods placement according to CPU/Memory/any user definition inside the manifest(affinity), actually decide which node will run the API call that got from the API Service.
-- Controller Manager (c-m) - The basic controller that responsible on the Control Loop.
-There are several basic controllers in Kubernetes vanilla, such as RS(ReplicaSet), DS(DeamonSet), etc.
-We can also extend the capabilities of Kubernetes by create new Controllers for CRDs(Custom Resource Definition), such as Prometheus-Stack, etc.
-- Cloud Controller Manager (c-c-m) - Optional for external cloud controller
-- CoreDNS - This is not mandatory object inside the controlplane, but in most use cases we are using CoreDNS(or other DNS as a Service solutions) to be our local DNS manager. By default the local DNS name is `CLUSTER_NAME.cluster.local`.
-
-The Worker Node(dataplane) includes:
-
-- Kubelet (kubelet) - The primary “node agent” that runs on each node, work as Docker(or ContainerD) for each node to ensure containers are running in a pod.
-- Kube-proxy (k-proxy) - Work as a network proxy for each node, and reflects services as defined in the K8s API. This unit is responsible on manage the IP & Ports for each node.
-For each Service that comes up, the kube-proxy configure the IP table according to the details that declared in the Service manifest.
-
-**A basic flow looks like:**
-External/Internal API Call -> received on API Service -> save values on ETCD -> create a Control Loop with the Controller -> the Scheduler decides which node will treat on this API call.
+`kubectl exec -it POD_NAME — bash` - enter a bash shell to the pod env.
